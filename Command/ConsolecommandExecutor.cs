@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CsConsole
+namespace CsConsole.Command
 {
     public partial class CommandExecutor
     {
@@ -18,6 +18,7 @@ namespace CsConsole
                 "help" => Help,
                 "clear" => Clear,
                 "exit" => Exit,
+                "config" => Config,
                 _ => NotFound
             };
 
@@ -27,15 +28,20 @@ namespace CsConsole
                 => Console.WriteLine($"Cannot found command - [{cmd}]. Use [`help] to get imformation.");
         }
 
-        public void Help(string[] _)
+        private void Config(string[] args)
+        {
+            
+        }
+
+        private void Help(string[] _)
         {
 
         }
 
-        public void Clear(string[] _)
+        private void Clear(string[] _)
             => Console.Clear();
 
-        public void Exit(string[] _)
+        private void Exit(string[] _)
             => Environment.Exit(0);
     }
 }

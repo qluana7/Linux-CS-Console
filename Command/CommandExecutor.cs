@@ -6,15 +6,15 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CsConsole
+namespace CsConsole.Command
 {
     public partial class CommandExecutor
     {
-        public IEnumerable<string> Imports { get; set; }
+        CommandExecutorConfigure Configure { get; }
 
         public CommandExecutor(CommandExecutorConfigure config)
         {
-            Imports = config.Imports;
+            Configure = config;
         }
 
         public async Task<AnalysisResult> Run(string cs)
@@ -24,8 +24,9 @@ namespace CsConsole
                 var globals = new Variables();
 
                 var sopts = ScriptOptions.Default;
-                sopts = sopts.WithImports(Imports);
+                sopts = sopts.WithImports(Configure.Imports);
                 sopts = sopts.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
+                sopts.WithLanguageVersion(Configure.Version);
 
                 var script = CSharpScript.Create(cs, sopts, typeof(Variables));
                 script.Compile();

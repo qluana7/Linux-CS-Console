@@ -3,7 +3,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp;
+using Newtonsoft.Json;
+using CsConsole.Command;
+using CsConsole.CustomConsole;
+using CsConsole.Configuration;
 
 namespace CsConsole
 {
@@ -40,8 +44,8 @@ namespace CsConsole
             {
                 Console.Write("C# > ");
 
-                var cmd = ConsoleReader.ReadLine();
-                // var cmd = Console.ReadLine();
+                // var cmd = ConsoleReader.ReadLine();
+                var cmd = Console.ReadLine();
 
                 if (cmd.StartsWith("`"))
                 {
@@ -80,35 +84,23 @@ namespace CsConsole
 
         public void Init()
         {
+            const string config = "./config.cf";
 
-            Console.WriteLine("Start initializing");
+            if (!File.Exists(config))
+                File.Create(config).Close();
 
-            Console.WriteLine("Checking Files...");
-            if (!Directory.Exists("./data"))
-            {
-                Directory.CreateDirectory("./data");
-            }
-
-            if (!File.Exists("./data/imports.dat"))
-            {
-                Console.Write("Import lists not exists. Want to create standard import lists? (y/n) ");
-                var r = Console.ReadKey();
-
-                if (r.KeyChar == 'y')
-                    File.WriteAllLines("./data/imports.dat", StandardImports);
-            }
-
-            Console.WriteLine("Finished checking files.");
-
-            Console.Write("Read imports data...");
-            Executor = new CommandExecutor(new CommandExecutorConfigure()
-            {
-                Imports = File.ReadAllLines("./data/imports.dat")
-            });
-
-            Console.WriteLine("\rComplete reading imports data");
-
-            Console.Clear();
+            var json = File.ReadAllText(config);
+            
+            CommandConfigureManager cfm = new CommandConfigureManager(config,
+                                string.IsNullOrWhiteSpace(json) ?
+                                new CommandConfigure()
+                                {
+                                    Configure = new CommandExecutorConfigure()
+                                    {
+                                        Imports = StandardImports,
+                                        Version = LanguageVersion.CSharp9
+                                    }
+                                } : JsonConvert.DeserializeObject<CommandConfigure>(json));
         }
     }
 }

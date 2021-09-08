@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CsConsole
+namespace CsConsole.CustomConsole
 {
     public class ConsoleReader
     {
@@ -57,8 +57,16 @@ namespace CsConsole
                         Buffer = string.Empty;
                         Index = 0;
                         break;
+                    case ConsoleKey.Enter:
+                        Console.WriteLine();
+                        Buffer = string.Empty;
+                        Index = 0;
+                        break;
+                    case ConsoleKey.Backspace:
+                        Buffer.Remove(Index - 1);
+                        break;
                     default:
-                        Buffer += key.KeyChar;
+                        Buffer.Insert(Index, key.KeyChar.ToString());
                         break;
                 }
             } while (key.Key != ConsoleKey.Enter);
