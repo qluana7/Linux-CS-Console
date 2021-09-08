@@ -59,6 +59,7 @@ namespace CsConsole
                     Console.WriteLine(result.Result);
                 else if (result.State == ResultState.Error)
                     Console.WriteLine(ExceptionToString(result.Command, result.Exception));
+                    //Console.WriteLine($"{result.Exception.GetType().ToString()} {result.Exception.Message}");
             }
 
             string ExceptionToString(string cmd, Exception ex)
@@ -75,8 +76,6 @@ namespace CsConsole
                 string src = cmd.Substring(l, len);
 
                 string msg = ex.Message.Split("error")[1].Trim();
-
-                //Console.WriteLine($"{loc.X} {loc.Y} {l} {len}");
 
                 return $"{e}({loc.X},{loc.Y})\n\n{src}\n{" ".Multiple(loc.X - l - 1)}^\n\n{msg}";
             }
@@ -101,6 +100,8 @@ namespace CsConsole
                                         Version = LanguageVersion.CSharp9
                                     }
                                 } : JsonConvert.DeserializeObject<CommandConfigure>(json));
+            
+            Executor = new CommandExecutor(cfm.Configure.Configure);
         }
     }
 }

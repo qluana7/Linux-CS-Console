@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace CsConsole.Command
 {
     public partial class CommandExecutor
     {
+        public MethodInfo[] Methods { get; set; }
+
         public void RunCommand(string str)
         {
             var sp = str.Split(' ');
@@ -13,35 +16,39 @@ namespace CsConsole.Command
             var cmd = sp[0][1..];
             var arg = sp[1..];
 
-            Action<string[]> act = cmd switch
+            var m = Methods.FirstOrDefault(l => l.Name.ToLower() == cmd);
+
+            // Console.WriteLine(string.Join('\n', Methods.Select(l => l.Name)));
+
+            if (m == null)
             {
-                "help" => Help,
-                "clear" => Clear,
-                "exit" => Exit,
-                "config" => Config,
-                _ => NotFound
-            };
+                NotFound();
+                return;
+            }
 
-            act(arg);
+            m.Invoke(null, new object[] { arg });
 
-            void NotFound(string[] _)
+            void NotFound()
                 => Console.WriteLine($"Cannot found command - [{cmd}]. Use [`help] to get imformation.");
         }
+    }
 
-        private void Config(string[] args)
+    public class Commands
+    {
+        private static void Config(string[] args)
         {
             
         }
 
-        private void Help(string[] _)
+        private static void Help(string[] _)
         {
 
         }
 
-        private void Clear(string[] _)
+        private static void Clear(string[] _)
             => Console.Clear();
 
-        private void Exit(string[] _)
+        private static void Exit(string[] _)
             => Environment.Exit(0);
     }
 }
