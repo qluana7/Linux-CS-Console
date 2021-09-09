@@ -27,7 +27,7 @@ namespace CsConsole.Command
                 var sopts = ScriptOptions.Default;
                 sopts = sopts.WithImports(config.Imports);
                 sopts = sopts.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
-                sopts.WithLanguageVersion(config.Version);
+                sopts = sopts.WithLanguageVersion(config.Version);
 
                 var script = CSharpScript.Create(cs, sopts, typeof(Variables));
                 script.Compile();

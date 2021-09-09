@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CsConsole.Configuration;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CsConsole.Command
 {
@@ -60,7 +61,7 @@ namespace CsConsole.Command
             {
                 if (cmd == "config")
                 {
-                    m.Invoke(null, new object[] { arg[0], string.Empty });
+                    m.Invoke(null, new object[] { arg.Length == 0 ? "help" : arg[0], string.Empty });
                     return;
                 }
             }
@@ -72,6 +73,13 @@ namespace CsConsole.Command
 
     public class Commands
     {
+        private static IReadOnlyDictionary<string, string> ConfigCommandsDescription =>
+            new Dictionary<string, string>()
+            {
+                ["import"] = "Manage pre-imports which have included when using in console to run.",
+                ["version"] = "Manage C# compiler version."
+            };
+        
         [Description("Setting C# console options.")]
         public static void Config(string command, [Arguments] string arg)
         {
@@ -96,7 +104,9 @@ namespace CsConsole.Command
             void Config_Help()
             {
                 var n = nameof(Config).ToLower();
-                Console.WriteLine($"{n}: {n} {Utils.GetArgumentString<Commands>("Config", BindingFlags.Public | BindingFlags.Static)}");
+                Console.WriteLine($"{n}: {n} {Utils.GetArgumentString<Commands>("Config", BindingFlags.Public | BindingFlags.Static)}\n\n" +
+                                    "Commands :\n" +
+                                    string.Join('\n', ConfigCommandsDescription.Select(l => $"  {l.Key, -8} {l.Value}")));
             }
 
             void Config_Import(string[] s)
@@ -155,6 +165,8 @@ namespace CsConsole.Command
                             Version = con.Version
                         }
                     };
+
+                    Console.WriteLine($"{imports.Length} imports added.");
                 }
 
                 void Import_Remove(int ind)
@@ -169,6 +181,8 @@ namespace CsConsole.Command
                         return;
                     }
 
+                    var s = imp[ind];
+
                     imp.RemoveAt(ind);
 
                     Program.Manager.Configure = new CommandConfigure()
@@ -179,6 +193,8 @@ namespace CsConsole.Command
                             Version = con.Version
                         }
                     };
+
+                    Console.WriteLine($"[{s}] item removed.");
                 }
 
                 void Import_Set(string[] imports)
@@ -193,23 +209,93 @@ namespace CsConsole.Command
                             Version = con.Version
                         }
                     };
+
+                    Console.WriteLine("New pre-imports list set.");
                 }
 
                 void Import_Help()
                 {
                     Console.WriteLine("Usage: config import [command] (args..)\n\n" +
-                                      "Manage pre-imports list. pre-imports are include when using in console to compile and to run.\n\n" +
+                                      ConfigCommandsDescription["import"] + "\n\n" +
                                       "Commands : \n" +
                                       "  list                   - Show current pre-imports list\n" +
-                                     $"  add [imports..]        - Add pre-import string to list.\n" +
-                                     $"  remove [index:+number] - Remove pre-import string to list with index.\n" +
+                                      "  add [imports..]        - Add pre-import string to list.\n" +
+                                      "  remove [index:+number] - Remove pre-import string to list with index.\n" +
                                       "  set [imports..]        - Set new pre-import list.\n");
                 }
             }
 
             void Config_Version(string[] s)
             {
+                switch (s[0])
+                {
+                    case "list":
+                        Version_List();
+                        break;
+                    case "show":
+                        Version_Show();
+                        break;
+                    case "set":
+                        if (s.Length > 1)
+                            Version_Set(s[1]);
+                        else
+                            Version_Help();
+                        break;
+                    default:
+                        Version_Help();
+                        break;
+                }
 
+                void Version_List()
+                {
+                    Console.WriteLine($"Versions : [{string.Join(", ", Enum.GetNames<LanguageVersion>().Where(l => l.Contains("CSharp")).Select(l => l[6..].Replace('_', '.')))}"+
+                                       ", preview, latest]");
+                }
+
+                void Version_Show()
+                {
+                    Version();
+                }
+
+                void Version_Set(string s)
+                {
+                    LanguageVersion v;
+                    if (s == "latest")
+                        v = LanguageVersion.Latest;
+                    else if (s == "preview")
+                        v = LanguageVersion.Preview;
+                    else
+                    {
+                        if (Enum.TryParse<LanguageVersion>("CSharp" + s.Replace(".0", "").Replace('.', '_'), out var r))
+                        {
+                            v = r;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid version.\nUse list to get valid version");
+                            return;
+                        }
+                    }
+
+                    Program.Manager.Configure = new CommandConfigure()
+                    {
+                        Configure = new CommandExecutorConfigure()
+                        {
+                            Imports = Program.Manager.Configure.Configure.Imports,
+                            Version = v
+                        }
+                    };
+                }
+
+                void Version_Help()
+                {
+                    Console.WriteLine("Usage: config version [command] (args..)\n\n" +
+                                      ConfigCommandsDescription["version"] + " Use [list] command to get valid version.\n\n" +
+                                      "Commands : \n" +
+                                      "  list             - Show valid C# version list.\n" +
+                                      "  show             - Show current C# compiler version\n" +
+                                      "  set [version]    - Set version.\n");
+                }
             }
         }
 
@@ -222,6 +308,13 @@ namespace CsConsole.Command
             var str = m.Select(l => $"{l.Name.ToLower(), -7} {l.GetCustomAttribute<DescriptionAttribute>().Description}");
 
             Console.WriteLine(string.Join('\n', str));
+        }
+        
+        [Description("Get C# compiler versoin")]
+        public static void Version()
+        {
+            var v = Utils.GetVersion(Program.Manager.Configure.Configure.Version);
+                    Console.WriteLine("Current C# version : " + v);
         }
 
         [Description("Clear the C# console.")]
