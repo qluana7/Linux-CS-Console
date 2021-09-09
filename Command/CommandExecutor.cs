@@ -11,25 +11,23 @@ namespace CsConsole.Command
 {
     public partial class CommandExecutor
     {
-        CommandExecutorConfigure Configure { get; }
-
-        public CommandExecutor(CommandExecutorConfigure config)
+        public CommandExecutor()
         {
-            Configure = config;
             Methods = typeof(Commands).GetMethods(BindingFlags.Static | BindingFlags.Public);
             Converter = new ArgumentsConverter();
         }
 
         public async Task<AnalysisResult> Run(string cs)
         {
+            var config = Program.Manager.Configure.Configure;
             try
             {
                 var globals = new Variables();
 
                 var sopts = ScriptOptions.Default;
-                sopts = sopts.WithImports(Configure.Imports);
+                sopts = sopts.WithImports(config.Imports);
                 sopts = sopts.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
-                sopts.WithLanguageVersion(Configure.Version);
+                sopts.WithLanguageVersion(config.Version);
 
                 var script = CSharpScript.Create(cs, sopts, typeof(Variables));
                 script.Compile();

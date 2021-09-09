@@ -25,7 +25,7 @@ namespace CsConsole
 
         public CommandExecutor Executor { get; set; }
 
-        public CommandConfigureManager Manager { get; set; }
+        public static CommandConfigureManager Manager { get; set; }
     
         static void Main(string[] args)
         {
@@ -39,7 +39,7 @@ namespace CsConsole
             Init();
 
             Console.WriteLine("**C# Analysis Console**");
-            Console.WriteLine($"C# Version : {Utils.GetVersion(Manager.Configure.Configure.Version)} / Current Version : {Version}");
+            Console.WriteLine($"C# Version : {Utils.GetVersion(Manager.Configure.Configure.Version)} | Current Version : {Version}");
 
             while (true)
             {
@@ -66,6 +66,12 @@ namespace CsConsole
             string ExceptionToString(string cmd, Exception ex)
             {
                 string e = ex.GetType().ToString();
+
+                var ind = ex.Message.IndexOf("error CS") + 8;
+                var code = int.Parse(ex.Message[ind..(ind + 4)]);
+
+                if (code == 234)
+                    return $"{ex.GetType().ToString()} {ex.Message}";
 
                 var tmp = ex.Message.Split(')')[0][1..].Split(',');
                 (int Y, int X) loc = (int.Parse(tmp[0]), int.Parse(tmp[1]));
@@ -102,7 +108,7 @@ namespace CsConsole
                                     }
                                 } : JsonConvert.DeserializeObject<CommandConfigure>(json));
             
-            Executor = new CommandExecutor(Manager.Configure.Configure);
+            Executor = new CommandExecutor();
 
             Console.Clear();
         }
