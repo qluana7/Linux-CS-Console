@@ -7,7 +7,9 @@ namespace CsConsole.Command
 {
     public partial class CommandExecutor
     {
-        public MethodInfo[] Methods { get; set; }
+        public MethodInfo[] Methods { get; }
+
+        public ArgumentsConverter Converter { get; }
 
         public void RunCommand(string str)
         {
@@ -18,15 +20,46 @@ namespace CsConsole.Command
 
             var m = Methods.FirstOrDefault(l => l.Name.ToLower() == cmd);
 
-            // Console.WriteLine(string.Join('\n', Methods.Select(l => l.Name)));
-
             if (m == null)
             {
                 NotFound();
                 return;
             }
 
-            m.Invoke(null, new object[] { arg });
+            var p = m.GetParameters();
+
+            List<object> obj = new List<object>();
+
+            (string Argument, ParameterInfo Parameter)[] zp = arg.Zip(p).ToArray();
+
+            for (int i = 0; i < zp.Length; i++)
+            {
+                var g = zp[i];
+
+                if (g.Parameter.IsDefined(typeof(ParamArrayAttribute)))
+                    arg.Skip(i);
+
+                try
+                {
+                    var o = Converter.Convert(g.Argument, g.Parameter.ParameterType);
+                    obj.Add(o);
+                }
+                catch (ArgumentException)
+                { }
+            }
+
+            try
+            {
+                m.Invoke(null, obj.Any() ? obj.ToArray() : null);
+            }
+            catch (TargetParameterCountException)
+            {
+                if (cmd == "config")
+                {
+                    m.Invoke(null, new object[] { "help", new string[0] });
+                    return;
+                }
+            }
 
             void NotFound()
                 => Console.WriteLine($"Cannot found command - [{cmd}]. Use [`help] to get imformation.");
@@ -35,20 +68,59 @@ namespace CsConsole.Command
 
     public class Commands
     {
-        private static void Config(string[] args)
+        [Description("Setting C# console options.")]
+        public static void Config(string command, params string[] args)
         {
+            switch (command)
+            {
+                case "import":
+                    Config_Import(args);
+                    break;
+                case "version":
+                    Config_Version(args);
+                    break;
+                case "help":
+                    Config_Help();
+                    break;
+                default:
+                    Config_Help();
+                    break;
+            }
+
+            void Config_Help()
+            {
+                var n = nameof(Config).ToLower();
+                Console.WriteLine($"{n}: {n} ");
+            }
+
+            void Config_Import(string[] s)
+            {
+
+            }
+
+            void Config_Version(string[] s)
+            {
+
+            }
+        }
+
+        [Description("Get C# console tools commands list.")]
+        public static void Help()
+        {
+            Console.WriteLine("**C# Console Tools Commands List**\n");
             
+            var m = typeof(Commands).GetMethods(BindingFlags.Static | BindingFlags.Public);
+            var str = m.Select(l => $"{l.Name.ToLower(), -7} {l.GetCustomAttribute<DescriptionAttribute>().Description}");
+
+            Console.WriteLine(string.Join('\n', str));
         }
 
-        private static void Help(string[] _)
-        {
-
-        }
-
-        private static void Clear(string[] _)
+        [Description("Clear the C# console.")]
+        public static void Clear()
             => Console.Clear();
 
-        private static void Exit(string[] _)
+        [Description("Exit C# console.")]
+        public static void Exit()
             => Environment.Exit(0);
     }
 }

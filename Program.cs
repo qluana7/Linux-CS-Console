@@ -21,10 +21,11 @@ namespace CsConsole
             "System.Linq"
         };
 
-        public const string CsVersion = "9.0";
         public const string Version = "1.0.0";
 
         public CommandExecutor Executor { get; set; }
+
+        public CommandConfigureManager Manager { get; set; }
     
         static void Main(string[] args)
         {
@@ -38,7 +39,7 @@ namespace CsConsole
             Init();
 
             Console.WriteLine("**C# Analysis Console**");
-            Console.WriteLine($"C# Version : {CsVersion} / Current Version : {Version}");
+            Console.WriteLine($"C# Version : {Utils.GetVersion(Manager.Configure.Configure.Version)} / Current Version : {Version}");
 
             while (true)
             {
@@ -90,7 +91,7 @@ namespace CsConsole
 
             var json = File.ReadAllText(config);
             
-            CommandConfigureManager cfm = new CommandConfigureManager(config,
+            Manager = new CommandConfigureManager(config,
                                 string.IsNullOrWhiteSpace(json) ?
                                 new CommandConfigure()
                                 {
@@ -101,7 +102,9 @@ namespace CsConsole
                                     }
                                 } : JsonConvert.DeserializeObject<CommandConfigure>(json));
             
-            Executor = new CommandExecutor(cfm.Configure.Configure);
+            Executor = new CommandExecutor(Manager.Configure.Configure);
+
+            Console.Clear();
         }
     }
 }

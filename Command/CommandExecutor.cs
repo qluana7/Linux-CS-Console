@@ -16,7 +16,8 @@ namespace CsConsole.Command
         public CommandExecutor(CommandExecutorConfigure config)
         {
             Configure = config;
-            Methods = typeof(Commands).GetMethods(BindingFlags.Static | BindingFlags.NonPublic);
+            Methods = typeof(Commands).GetMethods(BindingFlags.Static | BindingFlags.Public);
+            Converter = new ArgumentsConverter();
         }
 
         public async Task<AnalysisResult> Run(string cs)
