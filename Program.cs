@@ -90,7 +90,7 @@ namespace CsConsole
 
         public void Init()
         {
-            const string config = "./config.cf";
+            string config = AppDomain.CurrentDomain.BaseDirectory + "/config.cf";
 
             if (!File.Exists(config))
                 File.Create(config).Close();
