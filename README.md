@@ -57,4 +57,4 @@ sudo apt-get update; \
 
 **Note**
 - This app is compiled and built in Ubuntu (21.04). Therefore, compatibility with other platform is not guaranteed.
-- I check this app in windows. And it works nice. If you wanna use this in windows, download source and build it. You can build as "Release" configuration.
+- I checked this app in windows. And it worked nice. If you wanna use this in windows, download source and build it. You can build as "Release" configuration.
