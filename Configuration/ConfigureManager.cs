@@ -22,7 +22,7 @@ namespace CsConsole.Configuration
         }
 
         public CommandConfigureManager(string confile, CommandConfigure config = null)
-            : this(new FileStream(confile, FileMode.OpenOrCreate), config) { }
+            : this(new FileStream(confile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite), config) { }
 
         public CommandConfigureManager(FileStream constream, CommandConfigure config = null)
         {
