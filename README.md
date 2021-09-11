@@ -38,7 +38,7 @@ sudo apt-get update; \
   sudo apt-get install -y dotnet-runtime-5.0
 ```
 
-- All of Linux : https://docs.microsoft.com/en-us/dotnet/core/install/linux
+- [All of Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
 
 **cf.) Install runtime not a sdk. And you must install net 5.0 runtime.**
 
@@ -48,6 +48,13 @@ sudo apt-get update; \
 
 **Contact**
 - Discord : 단비#1004
+- Gmail : Luatronq@gmail.com
+
+**Information**
+- Release configuration : Optimize=true, OutputPath=bin\Release
+- .NET version : NET 5.0
+- Used libraries : [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json), [Roslyn:CodeAnalysis](https://github.com/dotnet/roslyn)
 
 **Note**
-- This app is compiled and built in Ubuntu (21.04). Therefore, compatibility with other platforms is not guaranteed.
+- This app is compiled and built in Ubuntu (21.04). Therefore, compatibility with other platform is not guaranteed.
+- I check this app in windows. And it works nice. If you wanna use this in windows, download source and build it. You can build as "Release" configuration.
