@@ -48,7 +48,7 @@ sudo apt-get update; \
 
 **Contact**
 - Discord : 단비#1004
-- Gmail : Luatronq@gmail.com
+- Gmail : emailluana@gmail.com
 
 **Information**
 - Release configuration : Optimize=true, OutputPath=bin\Release
